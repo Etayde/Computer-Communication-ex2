@@ -4,9 +4,9 @@
 #include <functional>
 #include <string>
 #include "Protocols.h"
-#include <windows.h>
 #pragma comment(lib, "Ws2_32.lib")
 #include <winsock2.h>
+#include <windows.h>
 #include <time.h>
 
 using namespace std;

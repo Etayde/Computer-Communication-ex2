@@ -116,7 +116,7 @@ void main()
 
 		// Route the request to the the correct handler inside TimeServer.
 		// The handler fills sendBuff with the response to be sent back to the client.
-		timeServer.handleRequest(recvBuff, sendBuff);
+		TimeServer.handleRequest(recvBuff, sendBuff);
 
 		// Sends the answer to the client, using the client address collected by recvfrom.
 		bytesSent = sendto(m_socket, sendBuff, (int)strlen(sendBuff), 0, (const sockaddr*)&client_addr, client_addr_len);
