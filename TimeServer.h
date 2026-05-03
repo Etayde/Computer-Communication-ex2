@@ -6,7 +6,6 @@
 #include "Protocols.h"
 #pragma comment(lib, "Ws2_32.lib")
 #include <winsock2.h>
-#include <windows.h>
 #include <time.h>
 
 using namespace std;
