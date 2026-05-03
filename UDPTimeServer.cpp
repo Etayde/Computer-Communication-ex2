@@ -5,6 +5,7 @@ using namespace std;
 #include <winsock2.h>
 #include <string.h>
 #include <time.h>
+#include Protocol.h
 
 #define TIME_PORT	27015
 

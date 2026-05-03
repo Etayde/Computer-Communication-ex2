@@ -4,6 +4,7 @@ using namespace std;
 #pragma comment(lib, "Ws2_32.lib")
 #include <winsock2.h> 
 #include <string.h>
+#include Protocol.h
 
 #define TIME_PORT	27015
 
@@ -47,34 +48,83 @@ void main()
 	char sendBuff[255] = "What's the time?";
 	char recvBuff[255];
 
-	// Asks the server what's the currnet time.
-	// The send function sends data on a connected socket.
-	// The buffer to be sent and its size are needed.
-	// The fourth argument is an idicator specifying the way in which the call is made (0 for default).
-	// The two last arguments hold the details of the server to communicate with. 
-	// NOTE: the last argument should always be the actual size of the client's data-structure (i.e. sizeof(sockaddr)).
-	bytesSent = sendto(connSocket, sendBuff, (int)strlen(sendBuff), 0, (const sockaddr *)&server, sizeof(server));
-	if (SOCKET_ERROR == bytesSent)
-	{
-		cout << "Time Client: Error at sendto(): " << WSAGetLastError() << endl;
-		closesocket(connSocket);
-		WSACleanup();
-		return;
-	}
-	cout << "Time Client: Sent: " << bytesSent << "/" << strlen(sendBuff) << " bytes of \"" << sendBuff << "\" message.\n";
+	while (true)
+    {
+		// Show the menu to the user
+        cout << "\n=== UDP Time Client ===\n";
+        cout << " 1.  GetTime\n";
+        cout << " 2.  GetTimeWithoutDate\n";
+        cout << " 3.  GetTimeSinceEpoch\n";
+        cout << " 4.  GetClientToServerDelayEstimation\n";
+        cout << " 5.  MeasureRTT\n";
+        cout << " 6.  GetTimeWithoutDateOrSeconds\n";
+        cout << " 7.  GetYear\n";
+        cout << " 8.  GetMonthAndDay\n";
+        cout << " 9.  GetSecondsSinceBeginingOfMonth\n";
+        cout << " 10. GetWeekOfYear\n";
+        cout << " 11. GetDaylightSavings\n";
+        cout << " 12. GetTimeWithoutDateInCity\n";
+        cout << " 13. MeasureTimeLap\n";
+        cout << " 14. Exit\n\n";
+        cout << "Select option (number only): ";
 
-	// Gets the server's answer using simple recieve (no need to hold the server's address).
-	bytesRecv = recv(connSocket, recvBuff, 255, 0);
-	if (SOCKET_ERROR == bytesRecv)
-	{
-		cout << "Time Client: Error at recv(): " << WSAGetLastError() << endl;
-		closesocket(connSocket);
-		WSACleanup();
-		return;
-	}
+        int choice;
+        cin >> choice;
 
-	recvBuff[bytesRecv] = '\0'; //add the null-terminating to make it a string
-	cout << "Time Client: Recieved: " << bytesRecv << " bytes of \"" << recvBuff << "\" message.\n";
+		if (choice == 14)
+            break;
+
+		// Translate choice to protocol string
+        const char* request = nullptr;
+        switch (choice)
+        {
+            case 1:  request = Protocol::GET_TIME;                         break;
+            case 2:  request = Protocol::GET_TIME_WITHOUT_DATE;            break;
+            case 3:  request = Protocol::GET_TIME_SINCE_EPOCH;             break;
+            case 4:  request = Protocol::GET_CLIENT_TO_SERVER_DELAY;       break;
+            case 5:  request = Protocol::MEASURE_RTT;                      break;
+            case 6:  request = Protocol::GET_TIME_WITHOUT_DATE_OR_SECONDS; break;
+            case 7:  request = Protocol::GET_YEAR;                         break;
+            case 8:  request = Protocol::GET_MONTH_AND_DAY;                break;
+            case 9:  request = Protocol::GET_SECONDS_SINCE_MONTH_START;    break;
+            case 10: request = Protocol::GET_WEEK_OF_YEAR;                 break;
+            case 11: request = Protocol::GET_DAYLIGHT_SAVINGS;             break;
+            case 12: request = Protocol::GET_TIME_IN_CITY;                 break;
+            case 13: request = Protocol::MEASURE_TIME_LAP;                 break;
+            default:
+                cout << "Invalid option, please try again.\n";
+                continue;
+        }
+
+		// Asks the server what's the currnet time.
+		// The send function sends data on a connected socket.
+		// The buffer to be sent and its size are needed.
+		// The fourth argument is an idicator specifying the way in which the call is made (0 for default).
+		// The two last arguments hold the details of the server to communicate with. 
+		// NOTE: the last argument should always be the actual size of the client's data-structure (i.e. sizeof(sockaddr)).
+		bytesSent = sendto(connSocket, request, (int)strlen(request), 0, (const sockaddr *)&server, sizeof(server));
+		if (SOCKET_ERROR == bytesSent)
+		{
+			cout << "Time Client: Error at sendto(): " << WSAGetLastError() << endl;
+			closesocket(connSocket);
+			WSACleanup();
+			return;
+		}
+		cout << "Time Client: Sent: " << bytesSent << "/" << strlen(sendBuff) << " bytes of \"" << sendBuff << "\" message.\n";
+
+		// Gets the server's answer using simple recieve (no need to hold the server's address).
+		bytesRecv = recv(connSocket, recvBuff, 255, 0);
+		if (SOCKET_ERROR == bytesRecv)
+		{
+			cout << "Time Client: Error at recv(): " << WSAGetLastError() << endl;
+			closesocket(connSocket);
+			WSACleanup();
+			return;
+		}
+
+		recvBuff[bytesRecv] = '\0'; //add the null-terminating to make it a string
+		cout << "Time Client: Recieved: " << bytesRecv << " bytes of \"" << recvBuff << "\" message.\n";
+	}
 
 	// Closing connections and Winsock.
 	cout << "Time Client: Closing Connection.\n";
