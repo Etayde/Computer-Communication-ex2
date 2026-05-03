@@ -1,6 +1,6 @@
 #pragma once
 
-namespace Protocol {
+namespace Protocols {
     constexpr const char* GET_TIME = "GetTime";
     constexpr const char* GET_TIME_WITHOUT_DATE = "GetTimeWithoutDate";
     constexpr const char* GET_TIME_SINCE_EPOCH = "GetTimeSinceEpoch";

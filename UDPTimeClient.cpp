@@ -4,7 +4,7 @@ using namespace std;
 #pragma comment(lib, "Ws2_32.lib")
 #include <winsock2.h> 
 #include <string.h>
-#include Protocol.h
+#include "Protocols.h"
 
 #define TIME_PORT	27015
 
@@ -78,19 +78,19 @@ void main()
         const char* request = nullptr;
         switch (choice)
         {
-            case 1:  request = Protocol::GET_TIME;                         break;
-            case 2:  request = Protocol::GET_TIME_WITHOUT_DATE;            break;
-            case 3:  request = Protocol::GET_TIME_SINCE_EPOCH;             break;
-            case 4:  request = Protocol::GET_CLIENT_TO_SERVER_DELAY;       break;
-            case 5:  request = Protocol::MEASURE_RTT;                      break;
-            case 6:  request = Protocol::GET_TIME_WITHOUT_DATE_OR_SECONDS; break;
-            case 7:  request = Protocol::GET_YEAR;                         break;
-            case 8:  request = Protocol::GET_MONTH_AND_DAY;                break;
-            case 9:  request = Protocol::GET_SECONDS_SINCE_MONTH_START;    break;
-            case 10: request = Protocol::GET_WEEK_OF_YEAR;                 break;
-            case 11: request = Protocol::GET_DAYLIGHT_SAVINGS;             break;
-            case 12: request = Protocol::GET_TIME_IN_CITY;                 break;
-            case 13: request = Protocol::MEASURE_TIME_LAP;                 break;
+            case 1:  request = Protocols::GET_TIME;                         break;
+            case 2:  request = Protocols::GET_TIME_WITHOUT_DATE;            break;
+            case 3:  request = Protocols::GET_TIME_SINCE_EPOCH;             break;
+            case 4:  request = Protocols::GET_CLIENT_TO_SERVER_DELAY;       break;
+            case 5:  request = Protocols::MEASURE_RTT;                      break;
+            case 6:  request = Protocols::GET_TIME_WITHOUT_DATE_OR_SECONDS; break;
+            case 7:  request = Protocols::GET_YEAR;                         break;
+            case 8:  request = Protocols::GET_MONTH_AND_DAY;                break;
+            case 9:  request = Protocols::GET_SECONDS_SINCE_MONTH_START;    break;
+            case 10: request = Protocols::GET_WEEK_OF_YEAR;                 break;
+            case 11: request = Protocols::GET_DAYLIGHT_SAVINGS;             break;
+            case 12: request = Protocols::GET_TIME_IN_CITY;                 break;
+            case 13: request = Protocols::MEASURE_TIME_LAP;                 break;
             default:
                 cout << "Invalid option, please try again.\n";
                 continue;

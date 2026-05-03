@@ -3,7 +3,8 @@
 #include <unordered_map>
 #include <functional>
 #include <string>
-#include "protocol.h"
+#include "Protocols.h"
+#include <windows.h>
 #pragma comment(lib, "Ws2_32.lib")
 #include <winsock2.h>
 #include <time.h>
@@ -19,10 +20,8 @@ public:
 private:
     unordered_map<string, Handler> handlers;
 
-    // helper
     tm* getCurrentTime();
 
-    // handlers
     void handleGetTime(char* sendBuff);
     void handleGetTimeWithoutDate(char* sendBuff);
     void handleGetTimeSinceEpoch(char* sendBuff);
