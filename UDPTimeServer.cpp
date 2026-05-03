@@ -6,7 +6,7 @@ using namespace std;
 
 #define TIME_PORT 27015
 
-void main()
+int main()
 {
 	// Initialize Winsock (Windows Sockets).
 
@@ -22,7 +22,7 @@ void main()
 	if (NO_ERROR != WSAStartup(MAKEWORD(2, 2), &wsaData))
 	{
 		cout << "Time Server: Error at WSAStartup()\n";
-		return;
+		return 1;
 	}
 
 	// Server side:
@@ -46,7 +46,7 @@ void main()
 	{
 		cout << "Time Server: Error at socket(): " << WSAGetLastError() << endl;
 		WSACleanup();
-		return;
+		return 1;
 	}
 
 	// For a server to communicate on a network, it must first bind the socket to 
@@ -79,7 +79,7 @@ void main()
 		cout << "Time Server: Error at bind(): " << WSAGetLastError() << endl;
 		closesocket(m_socket);
 		WSACleanup();
-		return;
+		return 1;
 	}
 
 	// Waits for incoming requests from clients.
@@ -109,7 +109,7 @@ void main()
 			cout << "Time Server: Error at recvfrom(): " << WSAGetLastError() << endl;
 			closesocket(m_socket);
 			WSACleanup();
-			return;
+			return 1;
 		}
 
 		recvBuff[bytesRecv] = '\0'; //add the null-terminating to make it a string
@@ -126,7 +126,7 @@ void main()
 			cout << "Time Server: Error at sendto(): " << WSAGetLastError() << endl;
 			closesocket(m_socket);
 			WSACleanup();
-			return;
+			return 1;
 		}
 
 		cout << "Time Server: Sent: " << bytesSent << "\\" << strlen(sendBuff) << " bytes of \"" << sendBuff << "\" message.\n";
@@ -136,4 +136,6 @@ void main()
 	cout << "Time Server: Closing Connection.\n";
 	closesocket(m_socket);
 	WSACleanup();
+
+	return 0;
 }
