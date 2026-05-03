@@ -1,13 +1,9 @@
-#define _CRT_SECURE_NO_WARNINGS
+#define _WINSOCK_DEPRECATED_NO_WARNINGS
 #include <iostream>
+#include "TimeServer.h"
 using namespace std;
-#pragma comment(lib, "Ws2_32.lib")
-#include <winsock2.h>
-#include <string.h>
-#include <time.h>
-#include Protocol.h
 
-#define TIME_PORT	27015
+#define TIME_PORT 27015
 
 void main()
 {
@@ -118,18 +114,12 @@ void main()
 		recvBuff[bytesRecv] = '\0'; //add the null-terminating to make it a string
 		cout << "Time Server: Recieved: " << bytesRecv << " bytes of \"" << recvBuff << "\" message.\n";
 
-		// Answer client's request by the current time.
+		// Route the request to the the correct handler inside TimeServer.
+		// The handler fills sendBuff with the response to be sent back to the client.
+		timeServer.handleRequest(recvBuff, sendBuff);
 
-		// Get the current time.
-		time_t timer;
-		time(&timer);
-		// Parse the current time to printable string.
-		strcpy(sendBuff, ctime(&timer));
-		sendBuff[strlen(sendBuff) - 1] = '\0'; //to remove the new-line from the created string
-
-		// Sends the answer to the client, using the client address gathered
-		// by recvfrom. 
-		bytesSent = sendto(m_socket, sendBuff, (int)strlen(sendBuff), 0, (const sockaddr *)&client_addr, client_addr_len);
+		// Sends the answer to the client, using the client address collected by recvfrom.
+		bytesSent = sendto(m_socket, sendBuff, (int)strlen(sendBuff), 0, (const sockaddr*)&client_addr, client_addr_len);
 		if (SOCKET_ERROR == bytesSent)
 		{
 			cout << "Time Server: Error at sendto(): " << WSAGetLastError() << endl;
