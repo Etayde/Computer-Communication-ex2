@@ -8,7 +8,9 @@
 #include <winsock2.h>
 #include <time.h>
 
-using namespace std;
+using std::unordered_map;
+using std::function;
+using std::string;
 using Handler = function<void(char*)>;
 
 struct CityInfo {
