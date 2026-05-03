@@ -12,12 +12,20 @@
 using namespace std;
 using Handler = function<void(char*)>;
 
+struct CityInfo {
+    const char* name;
+    int UTC_offset;
+};
+
 class TimeServer {
 public:
     TimeServer();
     void handleRequest(const char* request, char* sendBuff);
 
 private:
+    static const CityInfo CITIES[];
+    static const int NUM_CITIES;
+
     unordered_map<string, Handler> handlers;
 
     tm* getCurrentTime();
@@ -35,6 +43,7 @@ private:
     void handleGetDaylightSavings(char* sendBuff);
     void handleGetTimeInCity(char* sendBuff);
     void handleMeasureTimeLap(char* sendBuff);
+    void handleGetTimeInCityResponse(const char* cityName, char* sendBuff);
 
     // state for step 8
     DWORD lapStart  = 0;

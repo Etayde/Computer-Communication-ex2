@@ -1,21 +1,30 @@
 #include "TimeServer.h"
 #include <stdio.h>
 
+const CityInfo TimeServer::CITIES[] = {
+    {"Berlin", 1},
+    {"New York", -5},
+    {"Prague", 1},
+    {"Doha", 3},
+};
+
+const int TimeServer::NUM_CITIES = sizeof(CITIES) / sizeof(CITIES[0]);
+
 TimeServer::TimeServer() {
     handlers = {
-        { Protocols::GET_TIME, [this](char* b) { handleGetTime(b); } },
-        { Protocols::GET_TIME_WITHOUT_DATE, [this](char* b) { handleGetTimeWithoutDate(b); } },
-        { Protocols::GET_TIME_SINCE_EPOCH, [this](char* b) { handleGetTimeSinceEpoch(b); } },
-        { Protocols::GET_CLIENT_TO_SERVER_DELAY, [this](char* b) { handleGetClientToServerDelay(b); } },
-        { Protocols::MEASURE_RTT, [this](char* b) { handleMeasureRTT(b); } },
-        { Protocols::GET_TIME_WITHOUT_DATE_OR_SECONDS, [this](char* b) { handleGetTimeWithoutDateOrSeconds(b); } },
-        { Protocols::GET_YEAR, [this](char* b) { handleGetYear(b); } },
-        { Protocols::GET_MONTH_AND_DAY, [this](char* b) { handleGetMonthAndDay(b); } },
-        { Protocols::GET_SECONDS_SINCE_MONTH_START, [this](char* b) { handleGetSecondsSinceMonthStart(b); } },
-        { Protocols::GET_WEEK_OF_YEAR, [this](char* b) { handleGetWeekOfYear(b); } },
-        { Protocols::GET_DAYLIGHT_SAVINGS, [this](char* b) { handleGetDaylightSavings(b); } },
-        { Protocols::GET_TIME_IN_CITY, [this](char* b) { handleGetTimeInCity(b); } },
-        { Protocols::MEASURE_TIME_LAP, [this](char* b) { handleMeasureTimeLap(b); } },
+        { Protocols::GET_TIME, [this](char* b){handleGetTime(b);}},
+        { Protocols::GET_TIME_WITHOUT_DATE, [this](char* b){handleGetTimeWithoutDate(b);}},
+        { Protocols::GET_TIME_SINCE_EPOCH, [this](char* b){handleGetTimeSinceEpoch(b);}},
+        { Protocols::GET_CLIENT_TO_SERVER_DELAY, [this](char* b){handleGetClientToServerDelay(b);}},
+        { Protocols::MEASURE_RTT, [this](char* b){handleMeasureRTT(b);}},
+        { Protocols::GET_TIME_WITHOUT_DATE_OR_SECONDS, [this](char* b){handleGetTimeWithoutDateOrSeconds(b);}},
+        { Protocols::GET_YEAR, [this](char* b){handleGetYear(b);}},
+        { Protocols::GET_MONTH_AND_DAY, [this](char* b){handleGetMonthAndDay(b);}},
+        { Protocols::GET_SECONDS_SINCE_MONTH_START, [this](char* b){handleGetSecondsSinceMonthStart(b);}},
+        { Protocols::GET_WEEK_OF_YEAR, [this](char* b){handleGetWeekOfYear(b);}},
+        { Protocols::GET_DAYLIGHT_SAVINGS, [this](char* b){handleGetDaylightSavings(b);}},
+        { Protocols::GET_TIME_IN_CITY, [this](char* b){handleGetTimeInCity(b);}},
+        { Protocols::MEASURE_TIME_LAP, [this](char* b){handleMeasureTimeLap(b);}},
     };
 }
 
@@ -24,7 +33,8 @@ void TimeServer::handleRequest(const char* request, char* sendBuff) {
     if (it != handlers.end())
         it->second(sendBuff);
     else
-        sprintf(sendBuff, "ERROR: Unknown request");
+    // If the request is not found in the handlers map, the following method checks if it's a city name.
+        handleGetTimeInCityResponse(request, sendBuff);
 }
 
 // Returns a pointer to a tm struct representing the current local time.
@@ -117,9 +127,47 @@ void TimeServer::handleGetDaylightSavings(char* sendBuff) {
     sprintf(sendBuff, "%d", t->tm_isdst > 0 ? 1 : 0);
 }
 
-// To be implemented in Step 5.
+// Handles the first part of GetTimeWithoutDateInCity request.
+// Returns the list of cities for the client to choose from.
 void TimeServer::handleGetTimeInCity(char* sendBuff) {
-    sprintf(sendBuff, "TODO");
+    strcpy(sendBuff, "Available cities:\n");
+    for (int i = 0; i < NUM_CITIES; i++)
+    {
+        strcat(sendBuff, "  ");
+        strcat(sendBuff, CITIES[i].name);
+        strcat(sendBuff, "\n");
+    }
+    strcat(sendBuff, "Enter city name:");
+}
+
+// Handles the second part of GetTimeWithoutDateInCity request.
+// Returns the time in the requested city. If the city is not found, returns the UTC time.
+void TimeServer::handleGetTimeInCityResponse(const char* cityName, char* sendBuff) {
+    
+    // Find the city in the table.
+    int offset = 0;
+    bool found = false;
+    for (int i = 0; i < NUM_CITIES; i++)
+    {
+        if (strcmp(cityName, CITIES[i].name) == 0)
+        {
+            offset = CITIES[i].UTC_offset;
+            found  = true;
+            break;
+        }
+    }
+
+    // Calculate the time in the requested city by using the UTC offset.
+    time_t timer;
+    time(&timer);
+    timer += offset * 3600;
+    tm* t = gmtime(&timer);
+
+    if (found)
+        sprintf(sendBuff, "%02d:%02d:%02d", t->tm_hour, t->tm_min, t->tm_sec);
+    else
+        sprintf(sendBuff, "City not found. UTC time: %02d:%02d:%02d",
+                t->tm_hour, t->tm_min, t->tm_sec);
 }
 
 // To be implemented in Step 8.
