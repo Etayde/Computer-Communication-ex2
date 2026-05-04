@@ -74,7 +74,7 @@ int main()
 	// The function uses the socket handler, the sockaddr structure (which
 	// defines properties of the desired connection) and the length of the
 	// sockaddr structure (in bytes).
-	if (SOCKET_ERROR == bind(m_socket, (SOCKADDR *)&serverService, sizeof(serverService)))
+	if (SOCKET_ERROR == ::bind(m_socket, (SOCKADDR *)&serverService, sizeof(serverService)))
 	{
 		cout << "Time Server: Error at bind(): " << WSAGetLastError() << endl;
 		closesocket(m_socket);

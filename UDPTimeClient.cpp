@@ -144,9 +144,7 @@ int main()
 							DWORD t1 = GetTickCount();
 
 							// sending a request
-							sendto(connSocket, Protocols::MEASURE_RTT,
-								(int)strlen(Protocols::MEASURE_RTT),
-								0, (const sockaddr*)&server, sizeof(server));
+							sendto(connSocket, Protocols::MEASURE_RTT, (int)strlen(Protocols::MEASURE_RTT), 0, (const sockaddr*)&server, sizeof(server));
 
 							// waiting for response
 							bytesRecv = recv(connSocket, recvBuff, 255, 0);
