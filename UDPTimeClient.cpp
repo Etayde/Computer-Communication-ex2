@@ -32,6 +32,10 @@ int main()
 		return 1;
 	}
 
+	// set timeout for 5 seconds
+	int timeout = 5000;
+    setsockopt(connSocket, SOL_SOCKET, SO_RCVTIMEO, (const char*)&timeout, sizeof(timeout));
+
 	// For a client to communicate on a network, it must connect to a server.
 
 	// Need to assemble the required data for connection in sockaddr structure.
@@ -190,9 +194,6 @@ int main()
 
             case 13:
 					{
-						char recvBuff[255];
-						int  bytesRecv = 0;
-
 						// send MeasureTimeLap request to the server
 						sendto(connSocket, Protocols::MEASURE_TIME_LAP,
 							(int)strlen(Protocols::MEASURE_TIME_LAP),
@@ -200,9 +201,19 @@ int main()
 
 						// receive response from server
 						bytesRecv = recv(connSocket, recvBuff, 255, 0);
-						recvBuff[bytesRecv] = '\0';
-						cout << "Server: " << recvBuff << endl;
-
+						if (SOCKET_ERROR == bytesRecv)
+						{
+							// Server silently reset the timer (over 3 minutes passed)
+							if (WSAGetLastError() == WSAETIMEDOUT)
+								cout << "No response from server. Timer may have been reset (over 3 minutes).\n";
+							else
+								cout << "Time Client: Error at recv(): " << WSAGetLastError() << endl;
+						}
+						else
+						{
+							recvBuff[bytesRecv] = '\0';
+							cout << "Server: " << recvBuff << endl;
+						}
 						continue;
 					}
             default:
