@@ -85,8 +85,41 @@ int main()
 						break;
             case 3:  	request = Protocols::GET_TIME_SINCE_EPOCH;
 						break;
-            case 4:  	request = Protocols::GET_CLIENT_TO_SERVER_DELAY;
-						break;
+            case 4: {
+						const int  NUM_REQUESTS = 100;
+						DWORD      timestamps[NUM_REQUESTS];
+						int        bytesRecv = 0;
+						char       recvBuff[255];
+
+						// sending 100 request to the server
+						cout << "Sending " << NUM_REQUESTS << " requests...\n";
+						for (int i = 0; i < NUM_REQUESTS; i++)
+						{
+							sendto(connSocket, Protocols::GET_CLIENT_TO_SERVER_DELAY,
+								(int)strlen(Protocols::GET_CLIENT_TO_SERVER_DELAY),
+								0, (const sockaddr*)&server, sizeof(server));
+						}
+
+						// receiving 100 response from the server and saves the timestamps
+						cout << "Receiving " << NUM_REQUESTS << " responses...\n";
+						for (int i = 0; i < NUM_REQUESTS; i++)
+						{
+							bytesRecv = recv(connSocket, recvBuff, 255, 0);
+							recvBuff[bytesRecv] = '\0';
+							timestamps[i] = strtoul(recvBuff, nullptr, 10);
+						}
+
+						// calculating average difference between consecutive timestamps
+						double totalDiff = 0;
+						for (int i = 0; i < NUM_REQUESTS - 1; i++)
+							totalDiff += timestamps[i + 1] - timestamps[i];
+
+						double avgDiff = totalDiff / (NUM_REQUESTS - 1);
+						cout << "Average time between consecutive server timestamps: "
+							<< avgDiff << " ms\n";
+
+						continue;
+					}
             case 5:  	request = Protocols::MEASURE_RTT;
 						break;
             case 6:  	request = Protocols::GET_TIME_WITHOUT_DATE_OR_SECONDS;
