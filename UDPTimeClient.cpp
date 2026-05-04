@@ -109,6 +109,11 @@ int main()
 						for (int i = 0; i < NUM_REQUESTS; i++)
 						{
 							bytesRecv = recv(connSocket, recvBuff, 255, 0);
+							if (SOCKET_ERROR == bytesRecv)  
+							{
+								cout << "Time Client: Error at recv(): " << WSAGetLastError() << endl;
+								break;
+							}
 							recvBuff[bytesRecv] = '\0';
 							timestamps[i] = strtoul(recvBuff, nullptr, 10);
 						}
