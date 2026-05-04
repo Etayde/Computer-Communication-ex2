@@ -12,30 +12,34 @@ const int TimeServer::NUM_CITIES = sizeof(CITIES) / sizeof(CITIES[0]);
 
 TimeServer::TimeServer() {
     handlers = {
-        { Protocols::GET_TIME, [this](char* b){handleGetTime(b);}},
-        { Protocols::GET_TIME_WITHOUT_DATE, [this](char* b){handleGetTimeWithoutDate(b);}},
-        { Protocols::GET_TIME_SINCE_EPOCH, [this](char* b){handleGetTimeSinceEpoch(b);}},
-        { Protocols::GET_CLIENT_TO_SERVER_DELAY, [this](char* b){handleGetClientToServerDelay(b);}},
-        { Protocols::MEASURE_RTT, [this](char* b){handleMeasureRTT(b);}},
-        { Protocols::GET_TIME_WITHOUT_DATE_OR_SECONDS, [this](char* b){handleGetTimeWithoutDateOrSeconds(b);}},
-        { Protocols::GET_YEAR, [this](char* b){handleGetYear(b);}},
-        { Protocols::GET_MONTH_AND_DAY, [this](char* b){handleGetMonthAndDay(b);}},
-        { Protocols::GET_SECONDS_SINCE_MONTH_START, [this](char* b){handleGetSecondsSinceMonthStart(b);}},
-        { Protocols::GET_WEEK_OF_YEAR, [this](char* b){handleGetWeekOfYear(b);}},
-        { Protocols::GET_DAYLIGHT_SAVINGS, [this](char* b){handleGetDaylightSavings(b);}},
-        { Protocols::GET_TIME_IN_CITY, [this](char* b){handleGetTimeInCity(b);}},
-        { Protocols::MEASURE_TIME_LAP, [this](char* b){handleMeasureTimeLap(b);}},
+        { Protocols::GET_TIME, [this](char* b){handleGetTime(b); return true;}},
+        { Protocols::GET_TIME_WITHOUT_DATE, [this](char* b){handleGetTimeWithoutDate(b); return true;}},
+        { Protocols::GET_TIME_SINCE_EPOCH, [this](char* b){handleGetTimeSinceEpoch(b); return true;}},
+        { Protocols::GET_CLIENT_TO_SERVER_DELAY, [this](char* b){handleGetClientToServerDelay(b); return true;}},
+        { Protocols::MEASURE_RTT, [this](char* b){handleMeasureRTT(b); return true;}},
+        { Protocols::GET_TIME_WITHOUT_DATE_OR_SECONDS, [this](char* b){handleGetTimeWithoutDateOrSeconds(b); return true;}},
+        { Protocols::GET_YEAR, [this](char* b){handleGetYear(b); return true;}},
+        { Protocols::GET_MONTH_AND_DAY, [this](char* b){handleGetMonthAndDay(b); return true;}},
+        { Protocols::GET_SECONDS_SINCE_MONTH_START, [this](char* b){handleGetSecondsSinceMonthStart(b); return true;}},
+        { Protocols::GET_WEEK_OF_YEAR, [this](char* b){handleGetWeekOfYear(b); return true;}},
+        { Protocols::GET_DAYLIGHT_SAVINGS, [this](char* b){handleGetDaylightSavings(b); return true;}},
+        { Protocols::GET_TIME_IN_CITY, [this](char* b){handleGetTimeInCity(b); return true;}},
+        { Protocols::MEASURE_TIME_LAP, [this](char* b){handleMeasureTimeLap(b); return true;}},
     };
 }
 
-void TimeServer::handleRequest(const char* request, char* sendBuff) {
+bool TimeServer::handleRequest(const char* request, char* sendBuff) {
     auto it = handlers.find(request);
     if (it != handlers.end())
-        it->second(sendBuff);
+        return it->second(sendBuff);
     else
-    // If the request is not found in the handlers map, the following method checks if it's a city name.
+    {
+        // If the request is not found in the handlers map, the following method checks if it's a city name.
         handleGetTimeInCityResponse(request, sendBuff);
+        return true;
+    }
 }
+
 
 // Returns a pointer to a tm struct representing the current local time.
 tm* TimeServer::getCurrentTime() {
@@ -170,7 +174,39 @@ void TimeServer::handleGetTimeInCityResponse(const char* cityName, char* sendBuf
                 t->tm_hour, t->tm_min, t->tm_sec);
 }
 
-// To be implemented in Step 8.
-void TimeServer::handleMeasureTimeLap(char* sendBuff) {
-    sprintf(sendBuff, "TODO");
+// Handles the MeasureTimeLap request.
+// First call: starts the timer and returns a confirmation message.
+// Second call: a) if less than 3 minutes have passed, returns the time passed.
+//              b) if more than 3 minutes have passed, resets the timer silently.
+bool TimeServer::handleMeasureTimeLap(char* sendBuff) {
+    if (!lapActive)
+    {
+        // First call - start measuring
+        lapStart  = GetTickCount();
+        lapActive = true;
+        sprintf(sendBuff, "Timer started. Send MeasureTimeLap again to get elapsed time.");
+        return true;
+    }
+    else
+    {
+        DWORD now     = GetTickCount();
+        DWORD elapsed = now - lapStart;
+
+        if (elapsed > 180000)
+        {
+            // More than 3 minutes passed - reset timer
+            lapActive = false;
+            lapStart  = 0;
+            sprintf(sendBuff, "Timer expired (over 3 minutes). Timer has been reset.");
+            return false;
+        }
+        else
+        {
+            // Return the time passed and reset
+            lapActive = false;
+            lapStart  = 0;
+            sprintf(sendBuff, "Elapsed time: %lu ms", elapsed);
+            return true;
+        }
+    }
 }

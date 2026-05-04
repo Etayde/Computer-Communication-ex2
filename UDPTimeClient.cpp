@@ -188,8 +188,23 @@ int main()
 						continue;
 					}
 
-            case 13: 	request = Protocols::MEASURE_TIME_LAP;
-						break;
+            case 13:
+					{
+						char recvBuff[255];
+						int  bytesRecv = 0;
+
+						// send MeasureTimeLap request to the server
+						sendto(connSocket, Protocols::MEASURE_TIME_LAP,
+							(int)strlen(Protocols::MEASURE_TIME_LAP),
+							0, (const sockaddr*)&server, sizeof(server));
+
+						// receive response from server
+						bytesRecv = recv(connSocket, recvBuff, 255, 0);
+						recvBuff[bytesRecv] = '\0';
+						cout << "Server: " << recvBuff << endl;
+
+						continue;
+					}
             default:
                 cout << "Invalid option, please try again.\n";
                 continue;

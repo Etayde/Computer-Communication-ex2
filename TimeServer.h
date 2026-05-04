@@ -10,7 +10,7 @@
 
 using namespace std;
 
-using Handler = function<void(char*)>;
+using Handler = function<bool(char*)>;
 
 struct CityInfo {
     const char* name;
@@ -20,7 +20,7 @@ struct CityInfo {
 class TimeServer {
 public:
     TimeServer();
-    void handleRequest(const char* request, char* sendBuff);
+    bool handleRequest(const char* request, char* sendBuff);
 
 private:
     static const CityInfo CITIES[];
