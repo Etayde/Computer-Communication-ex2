@@ -120,8 +120,40 @@ int main()
 
 						continue;
 					}
-            case 5:  	request = Protocols::MEASURE_RTT;
-						break;
+            case 5:
+					{
+						const int NUM_REQUESTS = 100;
+						char      recvBuff[255];
+						int       bytesRecv = 0;
+						double    totalRTT  = 0;
+
+						cout << "Measuring RTT over " << NUM_REQUESTS << " requests...\n";
+
+						for (int i = 0; i < NUM_REQUESTS; i++)
+						{
+							// measure time before sending
+							DWORD t1 = GetTickCount();
+
+							// sending a request
+							sendto(connSocket, Protocols::MEASURE_RTT,
+								(int)strlen(Protocols::MEASURE_RTT),
+								0, (const sockaddr*)&server, sizeof(server));
+
+							// waiting for response
+							bytesRecv = recv(connSocket, recvBuff, 255, 0);
+							recvBuff[bytesRecv] = '\0';
+
+							// measure time after receiving response
+							DWORD t2 = GetTickCount();
+
+							totalRTT += (t2 - t1);
+						}
+
+						double avgRTT = totalRTT / NUM_REQUESTS;
+						cout << "Average RTT: " << avgRTT << " ms\n";
+
+						continue;
+					}
             case 6:  	request = Protocols::GET_TIME_WITHOUT_DATE_OR_SECONDS;
 						break;
             case 7:  	request = Protocols::GET_YEAR;
