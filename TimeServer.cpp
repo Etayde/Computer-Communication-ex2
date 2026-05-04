@@ -24,7 +24,7 @@ TimeServer::TimeServer() {
         { Protocols::GET_WEEK_OF_YEAR, [this](char* b){handleGetWeekOfYear(b); return true;}},
         { Protocols::GET_DAYLIGHT_SAVINGS, [this](char* b){handleGetDaylightSavings(b); return true;}},
         { Protocols::GET_TIME_IN_CITY, [this](char* b){handleGetTimeInCity(b); return true;}},
-        { Protocols::MEASURE_TIME_LAP, [this](char* b){handleMeasureTimeLap(b); return true;}},
+        { Protocols::MEASURE_TIME_LAP, [this](char* b){return handleMeasureTimeLap(b);}},
     };
 }
 

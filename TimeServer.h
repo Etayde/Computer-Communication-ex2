@@ -42,7 +42,7 @@ private:
     void handleGetWeekOfYear(char* sendBuff);
     void handleGetDaylightSavings(char* sendBuff);
     void handleGetTimeInCity(char* sendBuff);
-    void handleMeasureTimeLap(char* sendBuff);
+    bool handleMeasureTimeLap(char* sendBuff);
     void handleGetTimeInCityResponse(const char* cityName, char* sendBuff);
 
     // state for step 8

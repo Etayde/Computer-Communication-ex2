@@ -224,7 +224,7 @@ int main()
 			WSACleanup();
 			return 1;
 		}
-		cout << "Time Client: Sent: " << bytesSent << "/" << strlen(sendBuff) << " bytes of \"" << sendBuff << "\" message.\n";
+		cout << "Time Client: Sent: " << bytesSent << "/" << strlen(request) << " bytes of \"" << request << "\" message.\n";
 
 		// Gets the server's answer using simple recieve (no need to hold the server's address).
 		bytesRecv = recv(connSocket, recvBuff, 255, 0);
