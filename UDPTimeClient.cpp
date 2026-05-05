@@ -148,6 +148,11 @@ int main()
 
 							// waiting for response
 							bytesRecv = recv(connSocket, recvBuff, 255, 0);
+							if (SOCKET_ERROR == bytesRecv)
+							{
+								cout << "Time Client: Error at recv() or timeout: " << WSAGetLastError() << endl;
+								continue;
+							}
 							recvBuff[bytesRecv] = '\0';
 
 							// measure time after receiving response
