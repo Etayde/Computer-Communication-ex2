@@ -15,6 +15,7 @@ using Handler = function<bool(char*)>;
 struct CityInfo {
     const char* name;
     int UTC_offset;
+    bool DST;
 };
 
 class TimeServer {

@@ -2,10 +2,10 @@
 #include <stdio.h>
 
 const CityInfo TimeServer::CITIES[] = {
-    {"Berlin", 1},
-    {"New York", -5},
-    {"Prague", 1},
-    {"Doha", 3},
+    {"Berlin", 1, true},
+    {"New York", -5, true},
+    {"Prague", 1, true},
+    {"Doha", 3, false},
 };
 
 const int TimeServer::NUM_CITIES = sizeof(CITIES) / sizeof(CITIES[0]);
@@ -148,6 +148,9 @@ void TimeServer::handleGetTimeInCity(char* sendBuff) {
 // Returns the time in the requested city. If the city is not found, returns the UTC time.
 void TimeServer::handleGetTimeInCityResponse(const char* cityName, char* sendBuff) {
     
+    tm*  localT = getCurrentTime();
+    bool isDST  = localT->tm_isdst > 0;
+
     // Find the city in the table.
     int offset = 0;
     bool found = false;
@@ -156,6 +159,7 @@ void TimeServer::handleGetTimeInCityResponse(const char* cityName, char* sendBuf
         if (strcmp(cityName, CITIES[i].name) == 0)
         {
             offset = CITIES[i].UTC_offset;
+            if (isDST && CITIES[i].DST) offset += 1;
             found  = true;
             break;
         }
