@@ -29,6 +29,7 @@ TimeServer::TimeServer() {
 }
 
 bool TimeServer::handleRequest(const char* request, char* sendBuff) {
+    
     auto it = handlers.find(request);
     if (it != handlers.end())
         return it->second(sendBuff);
@@ -43,6 +44,7 @@ bool TimeServer::handleRequest(const char* request, char* sendBuff) {
 
 // Returns a pointer to a tm struct representing the current local time.
 tm* TimeServer::getCurrentTime() {
+    
     time_t timer;
     time(&timer);
     return localtime(&timer);
@@ -50,6 +52,7 @@ tm* TimeServer::getCurrentTime() {
 
 // Returns the current date and time in the format: dd/mm/yyyy hh:mm:ss
 void TimeServer::handleGetTime(char* sendBuff) {
+    
     tm* t = getCurrentTime();
     sprintf(sendBuff, "%02d/%02d/%04d %02d:%02d:%02d",
         t->tm_mday,
@@ -62,6 +65,7 @@ void TimeServer::handleGetTime(char* sendBuff) {
 
 // Returns the current time (without date) in the format: hh:mm:ss
 void TimeServer::handleGetTimeWithoutDate(char* sendBuff) {
+    
     tm* t = getCurrentTime();
     sprintf(sendBuff, "%02d:%02d:%02d",
         t->tm_hour,
@@ -71,6 +75,7 @@ void TimeServer::handleGetTimeWithoutDate(char* sendBuff) {
 
 // Returns the number of seconds elapsed since the Unix Epoch (01/01/1970).
 void TimeServer::handleGetTimeSinceEpoch(char* sendBuff) {
+    
     time_t timer;
     time(&timer);
     sprintf(sendBuff, "%lld", (long long)timer);
@@ -79,16 +84,19 @@ void TimeServer::handleGetTimeSinceEpoch(char* sendBuff) {
 // Returns the current server timestamp in milliseconds using GetTickCount().
 // Used by the client to estimate one-way client-to-server delay.
 void TimeServer::handleGetClientToServerDelay(char* sendBuff) {
+    
     sprintf(sendBuff, "%lu", GetTickCount());
 }
 
 // Returns a simple acknowledgment used by the client to measure RTT.
 void TimeServer::handleMeasureRTT(char* sendBuff) {
+    
     sprintf(sendBuff, "OK");
 }
 
 // Returns the current time (without date or seconds) in the format: hh:mm
 void TimeServer::handleGetTimeWithoutDateOrSeconds(char* sendBuff) {
+    
     tm* t = getCurrentTime();
     sprintf(sendBuff, "%02d:%02d",
         t->tm_hour,
@@ -97,12 +105,14 @@ void TimeServer::handleGetTimeWithoutDateOrSeconds(char* sendBuff) {
 
 // Returns the current year (e.g. 2026).
 void TimeServer::handleGetYear(char* sendBuff) {
+    
     tm* t = getCurrentTime();
     sprintf(sendBuff, "%04d", t->tm_year + 1900);
 }
 
 // Returns the current month and day in the format: mm/dd
 void TimeServer::handleGetMonthAndDay(char* sendBuff) {
+    
     tm* t = getCurrentTime();
     sprintf(sendBuff, "%02d/%02d",
         t->tm_mon + 1,
@@ -111,6 +121,7 @@ void TimeServer::handleGetMonthAndDay(char* sendBuff) {
 
 // Returns the number of seconds elapsed since the beginning of the current month.
 void TimeServer::handleGetSecondsSinceMonthStart(char* sendBuff) {
+    
     tm* t = getCurrentTime();
     long long seconds = (long long)(t->tm_mday - 1) * 86400
                       + t->tm_hour * 3600
@@ -121,19 +132,26 @@ void TimeServer::handleGetSecondsSinceMonthStart(char* sendBuff) {
 
 // Returns the current week number since the beginning of the year (starting at 1).
 void TimeServer::handleGetWeekOfYear(char* sendBuff) {
+    
     tm* t = getCurrentTime();
     sprintf(sendBuff, "%d", t->tm_yday / 7 + 1);
 }
 
 // Returns 1 if Daylight Saving Time is currently in effect, 0 otherwise.
 void TimeServer::handleGetDaylightSavings(char* sendBuff) {
-    tm* t = getCurrentTime();
-    sprintf(sendBuff, "%d", t->tm_isdst > 0 ? 1 : 0);
+    
+    // Gets the current time zone information.
+    TIME_ZONE_INFORMATION tzi;
+    DWORD result = GetTimeZoneInformation(&tzi);
+    
+    // Returns 1 if Daylight Saving Time is currently in effect, 0 otherwise.
+    sprintf(sendBuff, "%d", result == TIME_ZONE_ID_DAYLIGHT ? 1 : 0);
 }
 
 // Handles the first part of GetTimeWithoutDateInCity request.
 // Returns the list of cities for the client to choose from.
 void TimeServer::handleGetTimeInCity(char* sendBuff) {
+    
     strcpy(sendBuff, "Available cities:\n");
     for (int i = 0; i < NUM_CITIES; i++)
     {
@@ -148,8 +166,10 @@ void TimeServer::handleGetTimeInCity(char* sendBuff) {
 // Returns the time in the requested city. If the city is not found, returns the UTC time.
 void TimeServer::handleGetTimeInCityResponse(const char* cityName, char* sendBuff) {
     
-    tm*  localT = getCurrentTime();
-    bool isDST  = localT->tm_isdst > 0;
+    // Gets the current time zone information.
+    TIME_ZONE_INFORMATION tzi;
+    DWORD result = GetTimeZoneInformation(&tzi);
+    bool isDST   = (result == TIME_ZONE_ID_DAYLIGHT);
 
     // Find the city in the table.
     int offset = 0;
@@ -183,6 +203,7 @@ void TimeServer::handleGetTimeInCityResponse(const char* cityName, char* sendBuf
 // Second call: a) if less than 3 minutes have passed, returns the time passed.
 //              b) if more than 3 minutes have passed, resets the timer silently.
 bool TimeServer::handleMeasureTimeLap(char* sendBuff) {
+    
     if (!lapActive)
     {
         // First call - start measuring
